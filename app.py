@@ -3,7 +3,8 @@
 import streamlit as st
 import pandas as pd
 from ui.sidebar import render_sidebar
-
+from ui.theme import inject_global_theme_css
+inject_global_theme_css() 
 
 # ------------------------------------------------------------------
 # Page Config (must be first Streamlit call)
