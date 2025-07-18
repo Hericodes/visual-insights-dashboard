@@ -2,6 +2,8 @@
 
 import streamlit as st
 import pandas as pd
+from ui.sidebar import render_sidebar
+
 
 # ------------------------------------------------------------------
 # Page Config (must be first Streamlit call)
@@ -12,6 +14,26 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+SAMPLE_DF = pd.DataFrame({
+    "name": ["Honda City", "Maruti Swift", "Hyundai i20", "Toyota Corolla", "Ford Figo"],
+    "company": ["Honda", "Maruti", "Hyundai", "Toyota", "Ford"],
+    "year": [2018, 2016, 2019, 2015, 2017],
+    "Price": ["₹550000", "₹380000", "₹610000", "₹720000", "₹290000"],
+    "kms_driven": ["45,000", "60,500", "32,000", "80,000", "55,250"],
+    "fuel_type": ["Petrol", "Petrol", "Diesel", "Petrol", "Diesel"],
+})
+
+sidebar_result = render_sidebar(
+    app_pages=[
+        {"path": "app.py", "label": "Home", "icon": "🏠"},
+        {"path": "pages/1_Visual_Insights.py", "label": "Visual Insights", "icon": "📊"},
+    ],
+    show_file_uploader=False,  # we upload in main body
+    sample_data=SAMPLE_DF,
+    show_export=True,
+    show_env_badge=True,
+)
+
 
 # ------------------------------------------------------------------
 # Safe Imports of Internal Utils
@@ -115,84 +137,6 @@ st.markdown(
 st.markdown("### 📂 Upload Your Dataset")
 uploaded_file = st.file_uploader("Upload your CSV file here", type=["csv"])
 
-# ------------------------------------------------------------------
-# Sidebar
-# ------------------------------------------------------------------
-with st.sidebar:
-    st.markdown(
-        """
-        <div style="text-align:center; padding-bottom: 10px;">
-            <h2>📊 Data Storyteller</h2>
-            <p style="font-size:13px; opacity:0.8;">Turn data into stories</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    st.markdown("---")
-    st.markdown("### 🧭 **Navigation**")
-    # These rely on your actual multipage file structure
-    st.page_link("app.py", label="Home", icon="🏠")
-    st.page_link("pages/1_Visual_Insights.py", label="Visual Insights", icon="📊")
-
-    st.markdown("---")
-    st.markdown("### ⚙️ **Data Tools**")
-
-    if st.button("📂 Load Sample Data"):
-        sample_data = pd.DataFrame({
-            "name": ["Honda City", "Maruti Swift", "Hyundai i20", "Toyota Corolla", "Ford Figo"],
-            "company": ["Honda", "Maruti", "Hyundai", "Toyota", "Ford"],
-            "year": [2018, 2016, 2019, 2015, 2017],
-            "Price": ["₹550000", "₹380000", "₹610000", "₹720000", "₹290000"],
-            "kms_driven": ["45,000", "60,500", "32,000", "80,000", "55,250"],
-            "fuel_type": ["Petrol", "Petrol", "Diesel", "Petrol", "Diesel"],
-        })
-        st.session_state["data"] = sample_data
-        st.session_state["data_source_name"] = "sample_data.csv"
-        st.success("✅ Sample dataset loaded!")
-
-    if st.button("🧹 Clear Data"):
-        for k in ["data", "data_source_name"]:
-            st.session_state.pop(k, None)
-        st.experimental_rerun()
-
-    st.markdown("---")
-    st.markdown("### 🎨 Theme & Tone")
-
-    # Use current session values to preselect UI
-    theme_label = "🌞 Light" if st.session_state["theme"] == "light" else "🌙 Dark"
-    theme_choice = st.radio(
-        "Theme",
-        ["🌞 Light", "🌙 Dark"],
-        horizontal=True,
-        index=0 if theme_label == "🌞 Light" else 1,
-        key="theme_ui",
-    )
-
-    tone_map_ui_to_state = {"Formal": "formal", "Friendly": "friendly", "Analytical": "analytical"}
-    tone_label = {v: k for k, v in tone_map_ui_to_state.items()}[st.session_state["tone"]]
-    tone_choice = st.selectbox(
-        "🗣 Summary Tone",
-        list(tone_map_ui_to_state.keys()),
-        index=list(tone_map_ui_to_state.keys()).index(tone_label),
-        key="tone_ui",
-    )
-
-    # Sync back to session
-    st.session_state["theme"] = "light" if theme_choice.startswith("🌞") else "dark"
-    st.session_state["tone"] = tone_map_ui_to_state[tone_choice]
-
-    st.markdown("---")
-    st.markdown("### 📋 **Data Info**")
-    if "data" in st.session_state:
-        df_sidebar = st.session_state["data"]
-        st.success(f"Rows: **{len(df_sidebar)}**, Cols: **{len(df_sidebar.columns)}**")
-    else:
-        st.info("No data loaded yet.")
-
-    st.markdown("---")
-    st.markdown("### ℹ️ About")
-    st.write("Analyze, visualize, and narrate your datasets with AI-driven insights.")
 
 # ------------------------------------------------------------------
 # CSV Loader (cached)
